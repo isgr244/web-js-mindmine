@@ -199,6 +199,16 @@ canvas {
 /* ============================================================
    画面下のキーマップインジケーター
    ============================================================ */
+#version {
+  position: fixed;
+  bottom: 8px;
+  right: 8px;
+  color: #333;
+  font-size: 10px;
+  pointer-events: none;
+  z-index: 10;
+}
+
 #keymap {
   position: fixed;
   bottom: 8px;
