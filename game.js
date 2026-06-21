@@ -7,6 +7,7 @@
 /* ----------------------------------------------------------
    定数
    ---------------------------------------------------------- */
+const VERSION         = '3.0.0'; // 1桁目: main、2桁目: develop...、とブランチの階層でバージョンを分ける。
 const WAVE_INTERVAL   = 20000;   // Wave が上がるまでの ms
 const BASE_SPAWN_MS   = 2800;    // Wave1 の敵スポーン間隔 (ms)
 const MINE_READY_MS   = 3000;    // 地雷設置からこの時間後に起爆可能になる (ms)
@@ -56,6 +57,7 @@ const app = new PIXI.Application({
   resolution: window.devicePixelRatio || 1,
 });
 document.body.appendChild(app.view); // <canvas> を body 先頭に挿入
+document.getElementById('version').textContent = `v${VERSION}`;
 
 /* ----------------------------------------------------------
    シーングラフのレイヤー構成
