@@ -62,10 +62,17 @@
   <div id="gameover">
     <h1>GAME OVER</h1>
     <div class="reason" id="gameover-reason"></div>
-    <p>最終スコア: <span id="final-score">0</span></p>
-    <p class="final-combo-line">最終コンボ: ×<span id="final-combo">0</span></p>
-    <p id="final-rank-line">最終ランク: <span id="final-rank">1</span></p>
-    <p id="final-kps-line">撃破速度: <span id="final-kps">0.0</span> 匹/分</p>
+    <table id="result-table">
+      <thead>
+        <tr><th></th><th>今回</th><th>自己ベスト</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>スコア</td>    <td><span id="final-score">0</span></td>    <td><span id="best-score">0</span></td></tr>
+        <tr><td>最大コンボ</td><td>×<span id="final-combo">0</span></td>   <td>×<span id="best-combo">0</span></td></tr>
+        <tr><td>ランク</td>    <td><span id="final-rank">1</span></td>     <td><span id="best-rank">1</span></td></tr>
+        <tr><td>撃破速度</td>  <td><span id="final-kps">0.0</span> 匹/分</td><td><span id="best-kps">0.0</span> 匹/分</td></tr>
+      </tbody>
+    </table>
     <button onclick="restartGame()">もう一度プレイ</button>
   </div>
 
