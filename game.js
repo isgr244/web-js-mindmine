@@ -244,6 +244,7 @@ let floatTexts = [];
 
 let score      = 0;
 let comboCount = 0;
+let maxCombo   = 0;
 let wave       = 1;
 let gameRunning   = false;
 let countdownPhase= false;
@@ -275,15 +276,16 @@ function getRankLabel(i) { return String(i + 1); }
 
 /** rankIndex → スコア倍率 (1倍〜 線形増加) */
 function getRankMult(i)  { return i + 1; }
-const RANK_INTERVAL_MS   = 20000; // ランク評価間隔 (ms)
-const RANK_UP_THRESHOLD  = 0.6;   // 撃破率がこの値以上でランクアップ
-const RANK_DOWN_THRESHOLD= 0.4;   // 撃破率がこの値以下でランクダウン
+const RANK_INTERVAL_MS    = 30000; // ランク評価間隔 (ms)
+const RANK_REFERENCE_MS   = 20000; // 基準出現数を算出する参照時間 (ms)
+const RANK_UP_THRESHOLD   = 0.6;   // 撃破率がこの割合以上でランクアップ
+const RANK_DOWN_THRESHOLD = 0.4;   // 撃破率がこの割合以下でランクダウン
 
-let rankIndex       = 0;   // 現在のランクインデックス（表示は +1）
-let rankTimer       = 0;   // 評価タイマー (ms)
-let rankKillCount   = 0;   // 今の 30 秒間で倒した敵の数
-let rankSpawnCount  = 0;   // 今の 30 秒間でスポーンした敵の数
-let rankFlashTimer  = 0;   // ランク変動フラッシュ残り時間 (秒)
+let rankIndex          = 0;   // 現在のランクインデックス（表示は +1）
+let rankTimer          = 0;   // 評価タイマー (ms)
+let rankKillCount      = 0;   // 今の評価期間で倒した敵の数
+let rankFlashTimer     = 0;   // ランク変動フラッシュ残り時間 (秒)
+let currentSpawnInterval = BASE_SPAWN_MS; // 直近のスポーン間隔（updateUI から参照）
 let totalKills      = 0;   // ゲーム全体の撃破数
 let playTimeSec     = 0;   // ゲームプレイ時間（秒）
 
@@ -878,10 +880,11 @@ function detonateMine(key) {
   const el = document.getElementById('ki-' + key);
   if (el) el.className = 'ki';
 
-  // 範囲内の敵を倒す
+  // 範囲内の敵を倒す（最終段階の敵は無敵）
   const killed = [];
   for (let i = enemies.length - 1; i >= 0; i--) {
     const e = enemies[i];
+    if (e.stage >= MAX_STAGE) continue;
     if (Math.hypot(e.x - cx, e.y - cy) <= br + e.r) {
       killed.push(e);
       enemies.splice(i, 1);
@@ -905,6 +908,7 @@ function detonateMine(key) {
 
     // コンボ加算 (comboCount × 1pt)
     comboCount    += n;
+    if (comboCount > maxCombo) maxCombo = comboCount;
     rankKillCount += n;
     totalKills    += n;
     basePts += comboCount;
@@ -1005,7 +1009,7 @@ app.ticker.add((delta) => {
     updateParticles(dt);
     updateFloatTexts(dt);
     drawCrosshair();
-    if (finalStageTimer >= FINAL_HORROR_MS) endGame('手に負えない敵が現れた…');
+    if (finalStageTimer >= FINAL_HORROR_MS) endGame('手に負えなくなった…');
     return;
   }
 
@@ -1022,12 +1026,10 @@ app.ticker.add((delta) => {
     const k = rankKillCount;
     rankKillCount = 0;
     const prevRank = rankIndex;
-    const spawned = rankSpawnCount;
-    rankSpawnCount = 0;
 
-    // 出現した敵の 80% 以上を倒した → ランクアップ
-    // 出現した敵の 40% 以下しか倒せなかった → ランクダウン
-    const killRate = spawned > 0 ? k / spawned : 1;
+    // 現在のスポーン間隔で RANK_REFERENCE_MS(20s) に出現する敵数を基準とする
+    const expectedIn20s = RANK_REFERENCE_MS / currentSpawnInterval;
+    const killRate = k / expectedIn20s;
     if      (killRate >= RANK_UP_THRESHOLD)  rankIndex = rankIndex + 1;
     else if (killRate <= RANK_DOWN_THRESHOLD) rankIndex = Math.max(rankIndex - 1, 0);
 
@@ -1061,11 +1063,10 @@ app.ticker.add((delta) => {
   spawnTimer += dt * 1000;
   const baseInterval   = Math.max(800, BASE_SPAWN_MS - (wave - 1) * 200);
   const rankSpeedMult  = 1 + rankIndex * 0.1;          // rank0=×1.0, rank7=×1.7
-  const spawnInterval  = Math.max(500, baseInterval / rankSpeedMult);
-  if (spawnTimer >= spawnInterval) {
-    spawnTimer -= spawnInterval;
+  currentSpawnInterval = Math.max(500, baseInterval / rankSpeedMult);
+  if (spawnTimer >= currentSpawnInterval) {
+    spawnTimer -= currentSpawnInterval;
     spawnEnemy();
-    rankSpawnCount++;
   }
 
   // 敵の移動・進化・描画
@@ -1092,6 +1093,14 @@ app.ticker.add((delta) => {
     finalStageTimer = 0;
     seFinalStage();
     showMsg('⚠ 最終段階に到達！');
+    // 設置済みの全地雷を即時無効化（起爆・誘爆不可の不発弾に変える）
+    for (const key of Object.keys(mines)) {
+      const m = mines[key];
+      m.dud   = true;
+      m.ready = false;
+      const el = document.getElementById('ki-' + key);
+      if (el) el.className = 'ki dud';
+    }
   }
 
   // 地雷の更新
@@ -1127,12 +1136,12 @@ function updateUI() {
   document.getElementById('rank-mult').textContent   = `×${getRankMult(rankIndex)}`;
 
   // ランク判定メーター（現在の 30 秒区間での撃破率をリアルタイム表示）
-  const spawned = rankSpawnCount;
-  const killed  = rankKillCount;
-  const rate    = spawned > 0 ? killed / spawned : 0;
-  const pct     = Math.min(Math.round(rate * 100), 999);
+  // 基準: 現在のスポーン間隔で 20 秒間に出現する敵数
+  const expectedIn20s = RANK_REFERENCE_MS / currentSpawnInterval;
+  const rate = rankKillCount / expectedIn20s;
+  const pct  = Math.min(Math.round(rate * 100), 999);
 
-  document.getElementById('rank-kill-rate').textContent = spawned > 0 ? `${pct}%` : '--%';
+  document.getElementById('rank-kill-rate').textContent = `${pct}%`;
 
   const fill = document.getElementById('rank-meter-fill');
   const hint = document.getElementById('rank-meter-hint');
@@ -1142,8 +1151,8 @@ function updateUI() {
     fill.style.background = rate >= RANK_UP_THRESHOLD ? '#0ff' : (rate <= RANK_DOWN_THRESHOLD ? '#f44' : '#0f0');
   }
   if (hint) {
-    hint.textContent = rate >= RANK_UP_THRESHOLD ? '▲UP' : (rate <= RANK_DOWN_THRESHOLD && spawned > 0 ? '▼DN' : '→');
-    hint.style.color = rate >= RANK_UP_THRESHOLD ? '#0ff' : (rate <= RANK_DOWN_THRESHOLD && spawned > 0 ? '#f44' : '#888');
+    hint.textContent = rate >= RANK_UP_THRESHOLD ? '▲UP' : (rate <= RANK_DOWN_THRESHOLD ? '▼DN' : '→');
+    hint.style.color = rate >= RANK_UP_THRESHOLD ? '#0ff' : (rate <= RANK_DOWN_THRESHOLD ? '#f44' : '#888');
   }
 }
 
@@ -1179,12 +1188,32 @@ function endGame(reason) {
   gameRunning = false;
   seGameOver();
   const kpm = playTimeSec > 0 ? (totalKills / playTimeSec * 60).toFixed(1) : '0.0';
+
+  // localStorage から自己ベストを読み込み、更新する
+  const best = {
+    score : parseInt(localStorage.getItem('mm_best_score') || '0', 10),
+    combo : parseInt(localStorage.getItem('mm_best_combo') || '0', 10),
+    rank  : parseInt(localStorage.getItem('mm_best_rank')  || '0', 10),
+    kpm   : parseFloat(localStorage.getItem('mm_best_kpm') || '0'),
+  };
+  if (score        > best.score) { best.score = score;           localStorage.setItem('mm_best_score', score); }
+  if (maxCombo     > best.combo) { best.combo = maxCombo;        localStorage.setItem('mm_best_combo', maxCombo); }
+  if (rankIndex    > best.rank)  { best.rank  = rankIndex;       localStorage.setItem('mm_best_rank',  rankIndex); }
+  if (parseFloat(kpm) > best.kpm){ best.kpm   = parseFloat(kpm); localStorage.setItem('mm_best_kpm',  kpm); }
+
   document.getElementById('gameover-reason').textContent = reason || '';
   document.getElementById('final-score').textContent     = score;
-  document.getElementById('final-combo').textContent     = comboCount;
+  document.getElementById('final-combo').textContent     = maxCombo;
   document.getElementById('final-rank').textContent      = getRankLabel(rankIndex);
   document.getElementById('final-kps').textContent       = kpm;
-  document.getElementById('gameover').style.display      = 'flex';
+
+  // 自己ベスト表示
+  document.getElementById('best-score').textContent = best.score;
+  document.getElementById('best-combo').textContent = best.combo;
+  document.getElementById('best-rank').textContent  = getRankLabel(best.rank);
+  document.getElementById('best-kps').textContent   = best.kpm.toFixed(1);
+
+  document.getElementById('gameover').style.display = 'flex';
 }
 
 /* ----------------------------------------------------------
@@ -1212,11 +1241,11 @@ function initState() {
   floatTexts = [];
 
   // スコア・タイマーリセット
-  score = 0; comboCount = 0; wave = 1;
+  score = 0; comboCount = 0; maxCombo = 0; wave = 1;
   waveTimer = 0; spawnTimer = 0;
   shakeIntensity = 0;
   finalStageMode = false; finalStageTimer = 0;
-  rankIndex = 0; rankTimer = 0; rankKillCount = 0; rankSpawnCount = 0; rankFlashTimer = 0;
+  rankIndex = 0; rankTimer = 0; rankKillCount = 0; rankFlashTimer = 0;
   totalKills = 0; playTimeSec = 0;
   const rankEl = document.getElementById('rank-display');
   if (rankEl) rankEl.classList.remove('rank-up', 'rank-down');

@@ -140,30 +140,42 @@ canvas {
   letter-spacing: 4px;
 }
 
-#gameover p {
-  font-size: 22px;
-  color: #ff0;
-  margin-top: 14px;
-}
-
 #gameover .reason {
   font-size: 16px;
   color: #f88;
   margin-top: 8px;
 }
 
-#gameover .final-combo-line {
+#result-table {
+  margin-top: 20px;
+  border-collapse: collapse;
   font-size: 18px;
-  color: #f0f;
-  margin-top: 8px;
 }
 
-#final-rank-line, #final-kps-line {
-  font-size: 18px;
-  color: #0ff;
-  margin-top: 8px;
-  text-shadow: 0 0 8px #0ff;
+#result-table th {
+  color: #888;
+  font-size: 13px;
+  padding: 4px 20px;
+  border-bottom: 1px solid #333;
 }
+
+#result-table td {
+  padding: 6px 20px;
+  text-align: center;
+}
+
+#result-table td:first-child {
+  text-align: left;
+  color: #888;
+  font-size: 14px;
+}
+
+#result-table tr:nth-child(1) td:nth-child(2) { color: #ff0; }   /* スコア 今回 */
+#result-table tr:nth-child(2) td:nth-child(2) { color: #f0f; }   /* コンボ 今回 */
+#result-table tr:nth-child(3) td:nth-child(2) { color: #0ff; text-shadow: 0 0 8px #0ff; } /* ランク 今回 */
+#result-table tr:nth-child(4) td:nth-child(2) { color: #0ff; text-shadow: 0 0 8px #0ff; } /* 撃破速度 今回 */
+
+#result-table td:nth-child(3) { color: #555; font-size: 15px; }  /* 自己ベスト列 */
 
 #gameover button {
   margin-top: 28px;

@@ -167,12 +167,21 @@ const baseEvo = EVO_MS_MAX - rNorm * (EVO_MS_MAX - EVO_MS_MIN);  // 30000〜2000
 
 ### ランクアップ / ダウン判定
 
-`RANK_INTERVAL_MS`（20 秒）ごとに、その間に**出現した敵の数**と**倒した数**を比較して評価します。
+`RANK_INTERVAL_MS`（30 秒）ごとに評価します。
+基準は「現在のスポーン間隔で **20 秒間（`RANK_REFERENCE_MS`）に出現する敵の数**」です。
+30 秒間に倒した数がその基準値に対して何割かで判定します。
 
 ```js
-const RANK_INTERVAL_MS    = 20000;
-const RANK_UP_THRESHOLD   = 0.6;   // 出現数の 60% 以上倒す → ランクアップ
-const RANK_DOWN_THRESHOLD = 0.4;   // 出現数の 40% 以下しか倒せない → ランクダウン
+const RANK_INTERVAL_MS    = 30000; // 評価間隔
+const RANK_REFERENCE_MS   = 20000; // 基準出現数の参照時間
+const RANK_UP_THRESHOLD   = 0.6;   // 基準数の 60% 以上倒す → ランクアップ
+const RANK_DOWN_THRESHOLD = 0.4;   // 基準数の 40% 以下しか倒せない → ランクダウン
+```
+
+```js
+// 評価式（endGame 評価ブロック内）
+const expectedIn20s = RANK_REFERENCE_MS / currentSpawnInterval;
+const killRate      = rankKillCount / expectedIn20s;
 ```
 
 | 撃破率 | 結果 |
@@ -203,7 +212,7 @@ const spawnInterval = Math.max(500, baseInterval / rankSpeedMult);
 
 ### リアルタイム表示
 
-画面左上にランクメーターが常時表示されます。20 秒の判定期間内の撃破率をバーとパーセントで確認できます。
+画面左上にランクメーターが常時表示されます。30 秒の判定期間内における、基準出現数（20 秒分）に対する撃破率をバーとパーセントで確認できます。
 
 ---
 
@@ -212,11 +221,17 @@ const spawnInterval = Math.max(500, baseInterval / rankSpeedMult);
 最終ステージ（ステージ 5）の敵が出現した瞬間からカウントが始まり、
 `FINAL_HORROR_MS`（5000 ms = 5 秒）以内に倒せなければゲームオーバーになります。
 
-ゲームオーバー画面には以下が表示されます：
-- 最終スコア
-- 最終コンボ数
-- 最終ランク
-- 撃破速度（匹/分）
+ゲームオーバー画面には今回の結果と自己ベストが並べて表示されます：
+
+| 項目 | 今回 | 自己ベスト |
+|---|---|---|
+| スコア | 今回の最終スコア | `localStorage` に永続保存 |
+| 最大コンボ | ゲーム中の最大コンボ数（最終コンボではない） | 同上 |
+| ランク | 最終プレイヤーランク | 同上 |
+| 撃破速度 | 匹/分 | 同上 |
+
+自己ベストは `localStorage`（キー: `mm_best_score` / `mm_best_combo` / `mm_best_rank` / `mm_best_kpm`）に保存されます。
+各値は今回が上回った場合のみ更新されます（`endGame` 関数）。
 
 ---
 
