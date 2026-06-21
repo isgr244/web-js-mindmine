@@ -88,11 +88,11 @@ const MINE_READY_MS = 3000;  // 設置→起爆可能になるまでの待機時
 
 ### 出現と進化
 
-敵は画面外から一定間隔でスポーンし、6 段階（ステージ 0〜5）に進化します。
+敵は画面外から一定間隔で出現し、6 段階（ステージ 0〜5）に進化します。
 
 | 定数 | 値 | 意味 |
 |---|---|---|
-| `BASE_SPAWN_MS` | 2800 ms | Wave 1 のスポーン間隔 |
+| `BASE_SPAWN_MS` | 2800 ms | Wave 1 の出現間隔 |
 | `WAVE_INTERVAL` | 20000 ms | Wave が上がるまでの時間（20 秒） |
 | `EVO_MS_MIN` | 20000 ms | 最大サイズ敵の進化間隔（20 秒） |
 | `EVO_MS_MAX` | 30000 ms | 最小サイズ敵の進化間隔（30 秒） |
@@ -108,7 +108,7 @@ const baseEvo = EVO_MS_MAX - rNorm * (EVO_MS_MAX - EVO_MS_MIN);  // 30000〜2000
 
 ### 移動パターン
 
-スポーン時にランダムで 5 種類の移動パターンが割り当てられます（`MOVE_TYPES` 配列）：
+出現時にランダムで 5 種類の移動パターンが割り当てられます（`MOVE_TYPES` 配列）：
 
 | パターン | 内容 |
 |---|---|
@@ -168,7 +168,7 @@ const baseEvo = EVO_MS_MAX - rNorm * (EVO_MS_MAX - EVO_MS_MIN);  // 30000〜2000
 ### ランクアップ / ダウン判定
 
 `RANK_INTERVAL_MS`（30 秒）ごとに評価します。
-基準は「現在のスポーン間隔で **20 秒間（`RANK_REFERENCE_MS`）に出現する敵の数**」です。
+基準は「現在の出現間隔で **20 秒間（`RANK_REFERENCE_MS`）に出現する敵の数**」です。
 30 秒間に倒した数がその基準値に対して何割かで判定します。
 
 ```js
@@ -199,10 +199,10 @@ const killRate      = rankKillCount / expectedIn20s;
 | 要素 | 変化 |
 |---|---|
 | スコア倍率 | ランク番号 × 1 倍（ランク 3 なら ×3） |
-| 敵スポーン間隔 | ランク 1 段階ごとに 10% 短縮（最短 500 ms） |
+| 敵出現間隔 | ランク 1 段階ごとに 10% 短縮（最短 500 ms） |
 | 敵の進化速度 | ランク 5 段階までは 10%/段階 短縮、以降は固定（最短 10 秒） |
 
-スポーン間隔の計算（`game.js` メインループ）：
+出現間隔の計算（`game.js` メインループ）：
 
 ```js
 const baseInterval  = Math.max(800, BASE_SPAWN_MS - (wave - 1) * 200);
@@ -237,7 +237,7 @@ const spawnInterval = Math.max(500, baseInterval / rankSpeedMult);
 
 ## Wave システム
 
-`WAVE_INTERVAL`（20 秒）ごとに Wave が 1 上昇し、敵のスポーン間隔が短くなります：
+`WAVE_INTERVAL`（20 秒）ごとに Wave が 1 上昇し、敵の出現間隔が短くなります：
 
 ```js
 const baseInterval = Math.max(800, BASE_SPAWN_MS - (wave - 1) * 200);

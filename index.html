@@ -1,89 +1,163 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
-  <title>MindMine - キーボード地雷ゲーム</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindMine — キーボード地雷ゲーム</title>
+  <!-- 紹介ページ専用スタイルシート（ゲーム本体の style.css とは別ファイル） -->
+  <link rel="stylesheet" href="index.css">
 </head>
+
 <body>
 
-  <!-- PixiJS が <canvas> を自動生成して body 先頭に挿入する。
-       game.js 側で position:fixed / top:0 / left:0 を設定するため
-       ここに <canvas> タグは不要。 -->
+  <!-- ========================================================
+       ヘッダー：タイトルとキャッチフレーズ
+       ======================================================== -->
+  <header>
+    <h1>MINDMINE</h1>
+    <p class="tagline">キーボード地雷ゲーム</p>
+  </header>
 
-  <!-- 左上のスコア・コンボ・敵数・Wave 表示 -->
-  <div id="ui">
-    <div>SCORE <span id="score">0</span></div>
-    <div id="combo">COMBO ×<span id="combo-count">0</span></div>
-    <div>敵 <span id="ecount">0</span>匹</div>
-    <div>WAVE  <span id="wave">1</span></div>
-    <div id="rank-display">RANK <span id="rank-label">1</span> <span id="rank-mult">×1</span></div>
-    <div id="rank-meter">
-      撃破率 <span id="rank-kill-rate">--%</span>
-      <span id="rank-meter-bar">
-        <span id="rank-meter-fill"></span>
-      </span>
-      <span id="rank-meter-hint"></span>
+  <!-- ========================================================
+       サムネイル：ゲーム画面のイメージ画像
+       thumbnail.svg はゲームの雰囲気を伝えるイラスト
+       ======================================================== -->
+  <div class="thumbnail-wrap">
+    <img src="assets/thumbnail_mindmine.jpg" alt="MindMine ゲーム画面">
+  </div>
+
+  <!-- ========================================================
+       キャッチコピー：このゲームの本質を一言で表す
+       ======================================================== -->
+  <div class="catchcopy">
+    <p class="lead">敵を追いかけるな。</p>
+    <p class="sub">敵が来る場所に、地雷を置け。</p>
+  </div>
+
+  <!-- ========================================================
+       PLAYボタン：game.html（ゲーム本体）へのリンク
+       ======================================================== -->
+  <div class="play-wrap">
+    <a class="btn-play" href="game.html">▶ PLAY</a>
+  </div>
+
+  <!-- ========================================================
+       説明カードグリッド：カードでゲームを紹介する
+       ======================================================== -->
+  <main>
+
+    <!-- 操作方法 -->
+    <div class="card">
+      <h2>HOW TO PLAY</h2>
+
+      <!-- キー操作フロー（長押し → 離す → もう一度 → 起爆）をビジュアルで示す -->
+      <div class="key-demo">
+        <div class="key-step">
+          <span class="key">A</span>
+          <span class="label">長押し</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="key-step">
+          <span class="key" style="font-size:10px;letter-spacing:-1px">離す</span>
+          <span class="label">設置</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="key-step">
+          <!-- オレンジ = 起爆可能状態のキー -->
+          <span class="key orange">A</span>
+          <span class="label">もう一度</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="key-step">
+          <span class="key" style="border-color:#ff4;color:#ff4;font-size:10px">💥</span>
+          <span class="label">起爆！</span>
+        </div>
+      </div>
+
+      <p>
+        キーボードの好きなキーを長押しして離すと、カーソル位置に地雷が設置される。
+        もう一度同じキーを押すと起爆だ。<br><br>
+        ただし、<span class="hl-orange">長押しが2秒を超えると不発弾</span>になる。
+        不発弾は自分では爆発させられない——ほかの爆発の<span class="hl">連鎖</span>に巻き込むしかない。
+      </p>
     </div>
-    <div id="msg"></div>
-  </div>
 
-  <!-- 右下の進化段階インジケーター（ドット5つ） -->
-  <div id="evo-bar">
-    <div class="evo-label">進化段階</div>
-    <div id="evo-track">
-      <div class="evo-dot" id="evo0"></div>
-      <div class="evo-dot" id="evo1"></div>
-      <div class="evo-dot" id="evo2"></div>
-      <div class="evo-dot" id="evo3"></div>
-      <div class="evo-dot" id="evo4"></div>
+    <!-- 攻略の考え方 -->
+    <div class="card">
+      <h2>STRATEGY</h2>
+      <p>
+        敵はこちらに向かってこない。自由に動き回るだけだ。<br><br>
+        だからこそ、<span class="hl">敵の動きを読んで</span>地雷を先置きしよう。
+        複数の地雷が連鎖すれば、一度の爆発で戦況が変わる。<br><br>
+        爆破範囲は長押し時間で決まる。
+        より小さい爆発なほどハイスコア、沢山の小さな地雷を誘爆させ、効率よく撃破しよう。
+        さらに<span class="hl">地雷の真上で仕留めると、ジャストミートボーナス</span>も手に入れよう！<br/>
+      </p>
     </div>
-  </div>
 
-  <!-- 右上の操作ヒント -->
-  <div id="help">
-    任意のキー長押し → 離すと設置<br>
-    同じキーを再度押す → 起爆（設置から3秒後〜）<br>
-    長押し3秒超えた瞬間 → 即・不発弾<br>
-    3秒ちょうどで最大爆破範囲<br>
-    連鎖爆発あり / 同時撃破²スコア<br>
-    ジャストミートで×2 / コンボボーナス
-  </div>
+    <!-- スコアの仕組み -->
+    <div class="card">
+      <h2>SCORING</h2>
+      <ul>
+        <li>敵を倒すたびにスコアが入る</li>
+        <li>連続撃破で<span class="hl">コンボボーナス</span>が積み上がる</li>
+        <li>爆破範囲が<span class="hl">狭いほど</span>倍率が上がる（最大×2）</li>
+        <li>地雷の中心にいた敵を倒すと<span class="hl-cyan">JUST MEET ×2</span></li>
+        <li>プレイヤーランクが上がるほど<span class="hl-cyan">スコア倍率も上昇</span>する</li>
+      </ul>
+    </div>
 
-  <!-- 画面下のキーインジケーター（game.js で動的生成） -->
-  <div id="keymap"></div>
+    <!-- 敵のステージ一覧（ドットの色はゲーム内の敵の色と対応） -->
+    <div class="card">
+      <h2>ENEMIES</h2>
+      <div class="stage-list">
+        <div class="stage-row">
+          <div class="stage-dot" style="border-color:#88ccff;background:#1a3a5c"></div>
+          <span>Stage 1 — おとなしい。</span>
+        </div>
+        <div class="stage-row">
+          <div class="stage-dot" style="border-color:#66ee66;background:#0a2200"></div>
+          <span>Stage 2 — 少し動きが変わってくる</span>
+        </div>
+        <div class="stage-row">
+          <div class="stage-dot" style="border-color:#ffff44;background:#2a2800"></div>
+          <span>Stage 3 — 黄色信号。倒しておきたい</span>
+        </div>
+        <div class="stage-row">
+          <div class="stage-dot" style="border-color:#ffaa22;background:#3a1800"></div>
+          <span>Stage 4 — かなり危険。優先的に処理せよ</span>
+        </div>
+        <div class="stage-row">
+          <div class="stage-dot" style="border-color:#ff4422;background:#2a0000"></div>
+          <span>Stage 5 — <span class="hl-red">これ以上は放置できない</span></span>
+        </div>
+        <div class="stage-row">
+          <div class="stage-dot" style="border-color:#cc0000;background:#1a0000"></div>
+          <span>GAME OVER — <span class="hl-red">最終段階。世界は終焉を迎える</span></span>
+        </div>
+      </div>
+    </div>
 
-  <!-- バージョン表示 -->
-  <div id="version"></div>
+    <!-- このゲームの魅力・コンセプト -->
+    <div class="card">
+      <h2>APPEAL</h2>
+      <p>
+        このゲームに、リアルタイムの反射神経は要らない。<br><br>
+        必要なのは<span class="hl">読みと配置の精度</span>だ。
+        どこに置くか、いつ爆発させるか、どう連鎖させるか——
+        すべては爆発の前に決まっている。<br><br>
+        地雷を置いた瞬間ではなく、<span class="hl">爆発が起きた瞬間に快感が来る。</span>
+      </p>
+    </div>
 
-  <!-- カウントダウンオーバーレイ（3・2・1・START） -->
-  <div id="countdown-overlay">
-    <div id="countdown-num">3</div>
-  </div>
+  </main>
 
-  <!-- ゲームオーバー画面 -->
-  <div id="gameover">
-    <h1>GAME OVER</h1>
-    <div class="reason" id="gameover-reason"></div>
-    <table id="result-table">
-      <thead>
-        <tr><th></th><th>今回</th><th>自己ベスト</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>スコア</td>    <td><span id="final-score">0</span></td>    <td><span id="best-score">0</span></td></tr>
-        <tr><td>最大コンボ</td><td>×<span id="final-combo">0</span></td>   <td>×<span id="best-combo">0</span></td></tr>
-        <tr><td>ランク</td>    <td><span id="final-rank">1</span></td>     <td><span id="best-rank">1</span></td></tr>
-        <tr><td>撃破速度</td>  <td><span id="final-kps">0.0</span> 匹/分</td><td><span id="best-kps">0.0</span> 匹/分</td></tr>
-      </tbody>
-    </table>
-    <button onclick="restartGame()">もう一度プレイ</button>
-  </div>
-
-  <!-- PixiJS ライブラリ（WebGL/Canvas2D の高速レンダリングエンジン） -->
-  <script src="https://pixijs.download/v7.4.2/pixi.min.js"></script>
-
-  <!-- ゲームロジック本体 -->
-  <script src="game.js"></script>
+  <!-- ========================================================
+       フッター
+       ======================================================== -->
+  <footer>MindMine &nbsp;|&nbsp; キーボード地雷ゲーム</footer>
 
 </body>
+
 </html>
