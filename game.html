@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>MindMine - キーボード地雷ゲーム</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- PixiJS が <canvas> を自動生成して body 先頭に挿入する。
+       game.js 側で position:fixed / top:0 / left:0 を設定するため
+       ここに <canvas> タグは不要。 -->
+
+  <!-- 左上のスコア・コンボ・敵数・Wave 表示 -->
+  <div id="ui">
+    <div>SCORE <span id="score">0</span></div>
+    <div id="combo">COMBO ×<span id="combo-count">0</span></div>
+    <div>敵 <span id="ecount">0</span>匹</div>
+    <div>WAVE  <span id="wave">1</span></div>
+    <div id="rank-display">RANK <span id="rank-label">1</span> <span id="rank-mult">×1</span></div>
+    <div id="rank-meter">
+      撃破率 <span id="rank-kill-rate">--%</span>
+      <span id="rank-meter-bar">
+        <span id="rank-meter-fill"></span>
+      </span>
+      <span id="rank-meter-hint"></span>
+    </div>
+    <div id="msg"></div>
+  </div>
+
+  <!-- 右下の進化段階インジケーター（ドット5つ） -->
+  <div id="evo-bar">
+    <div class="evo-label">進化段階</div>
+    <div id="evo-track">
+      <div class="evo-dot" id="evo0"></div>
+      <div class="evo-dot" id="evo1"></div>
+      <div class="evo-dot" id="evo2"></div>
+      <div class="evo-dot" id="evo3"></div>
+      <div class="evo-dot" id="evo4"></div>
+    </div>
+  </div>
+
+  <!-- 右上の操作ヒント -->
+  <div id="help">
+    任意のキー長押し → 離すと設置<br>
+    同じキーを再度押す → 起爆（設置から3秒後〜）<br>
+    長押し3秒超えた瞬間 → 即・不発弾<br>
+    3秒ちょうどで最大爆破範囲<br>
+    連鎖爆発あり / 同時撃破²スコア<br>
+    ジャストミートで×2 / コンボボーナス
+  </div>
+
+  <!-- 画面下のキーインジケーター（game.js で動的生成） -->
+  <div id="keymap"></div>
+
+  <!-- バージョン表示 -->
+  <div id="version"></div>
+
+  <!-- カウントダウンオーバーレイ（3・2・1・START） -->
+  <div id="countdown-overlay">
+    <div id="countdown-num">3</div>
+  </div>
+
+  <!-- ゲームオーバー画面 -->
+  <div id="gameover">
+    <h1>GAME OVER</h1>
+    <div class="reason" id="gameover-reason"></div>
+    <table id="result-table">
+      <thead>
+        <tr><th></th><th>今回</th><th>自己ベスト</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>スコア</td>    <td><span id="final-score">0</span></td>    <td><span id="best-score">0</span></td></tr>
+        <tr><td>最大コンボ</td><td>×<span id="final-combo">0</span></td>   <td>×<span id="best-combo">0</span></td></tr>
+        <tr><td>ランク</td>    <td><span id="final-rank">1</span></td>     <td><span id="best-rank">1</span></td></tr>
+        <tr><td>撃破速度</td>  <td><span id="final-kps">0.0</span> 匹/分</td><td><span id="best-kps">0.0</span> 匹/分</td></tr>
+      </tbody>
+    </table>
+    <button onclick="restartGame()">もう一度プレイ</button>
+  </div>
+
+  <!-- PixiJS ライブラリ（WebGL/Canvas2D の高速レンダリングエンジン） -->
+  <script src="https://pixijs.download/v7.4.2/pixi.min.js"></script>
+
+  <!-- ゲームロジック本体 -->
+  <script src="game.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,244 @@
+/* ============================================================
+   MindMine — 紹介ページ スタイルシート
+   ============================================================ */
+
+/* --- リセット --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* --- ページ全体 --- */
+body {
+  background: #030d06;       /* 極暗い緑黒 */
+  color: #bbb;
+  font-family: 'Courier New', monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ============================================================
+   ヘッダー（タイトル・タグライン）
+   ============================================================ */
+header {
+  width: 100%;
+  max-width: 800px;
+  padding: 48px 24px 0;
+  text-align: center;
+}
+
+h1 {
+  font-size: clamp(36px, 8vw, 72px);
+  letter-spacing: 0.15em;
+  color: #0f0;
+  text-shadow: 0 0 24px #0f0;
+}
+
+.tagline {
+  margin-top: 10px;
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  color: #4a9a5a;
+}
+
+/* ============================================================
+   サムネイル画像
+   ============================================================ */
+.thumbnail-wrap {
+  width: 100%;
+  max-width: 680px;
+  margin: 36px auto 0;
+  padding: 0 16px;
+}
+
+.thumbnail-wrap img {
+  width: 100%;
+  border: 1px solid #0a2a10;
+  border-radius: 6px;
+  display: block;
+}
+
+/* ============================================================
+   キャッチコピー（PLAYボタン上）
+   ============================================================ */
+.catchcopy {
+  margin-top: 36px;
+  text-align: center;
+  line-height: 2.2;
+}
+
+.catchcopy .lead {
+  font-size: clamp(17px, 3vw, 24px);
+  color: #0f0;
+  letter-spacing: 0.05em;
+}
+
+.catchcopy .sub {
+  font-size: clamp(13px, 2vw, 16px);
+  color: #6aaa7a;
+  letter-spacing: 0.08em;
+}
+
+/* ============================================================
+   PLAYボタン
+   ============================================================ */
+.play-wrap {
+  margin-top: 28px;
+  text-align: center;
+}
+
+.btn-play {
+  display: inline-block;
+  padding: 16px 64px;
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  letter-spacing: 0.15em;
+  color: #000;
+  background: #0f0;
+  border: none;
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.btn-play:hover {
+  background: #4f4;
+  box-shadow: 0 0 24px #0f08;
+}
+
+/* ============================================================
+   説明カードグリッド
+   ============================================================ */
+main {
+  width: 100%;
+  max-width: 800px;
+  padding: 56px 24px 80px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+}
+
+/* 各カード */
+.card {
+  background: #070f07;
+  border: 1px solid #0d2a10;
+  border-radius: 6px;
+  padding: 24px;
+}
+
+.card h2 {
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  color: #0c0;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #0d2a10;
+  padding-bottom: 8px;
+}
+
+.card p {
+  font-size: 14px;
+  line-height: 2;
+  color: #999;
+}
+
+.card ul {
+  list-style: none;
+  padding: 0;
+}
+
+.card li {
+  font-size: 14px;
+  line-height: 2;
+  color: #999;
+  padding-left: 1.2em;
+  position: relative;
+}
+
+/* 箇条書きの矢印アイコン */
+.card li::before {
+  content: '▸';
+  color: #0c0;
+  position: absolute;
+  left: 0;
+}
+
+/* ============================================================
+   ハイライト用インラインカラークラス
+   ============================================================ */
+.hl        { color: #2ecc71; font-weight: bold; }  /* 緑（主要な強調） */
+.hl-orange { color: #f90; }                         /* オレンジ（警告・不発弾） */
+.hl-cyan   { color: #0df; }                         /* シアン（ボーナス・ランク） */
+.hl-red    { color: #f55; }                         /* 赤（危険・最終段階） */
+
+/* ============================================================
+   HOW TO PLAY カード — キー操作フロー図
+   ============================================================ */
+.key-demo {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.key-step { text-align: center; }
+
+/* キーボードキーを模したボックス */
+.key-step .key {
+  display: inline-block;
+  width: 38px;
+  height: 34px;
+  line-height: 34px;
+  border: 1px solid #0c0;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #0c0;
+  background: #050d05;
+}
+
+/* 起爆可能状態のキー（オレンジ） */
+.key-step .key.orange { border-color: #f90; color: #f90; }
+
+.key-step .label {
+  display: block;
+  font-size: 10px;
+  color: #555;
+  margin-top: 3px;
+}
+
+/* フロー図の矢印 */
+.arrow { font-size: 16px; color: #444; padding-bottom: 18px; }
+
+/* ============================================================
+   ENEMIES カード — ステージ一覧
+   ============================================================ */
+.stage-list { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
+
+.stage-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #888;
+}
+
+/* ステージの色を示す丸いドット（色はインラインで指定） */
+.stage-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   フッター
+   ============================================================ */
+footer {
+  margin-top: auto;
+  padding: 16px;
+  font-size: 11px;
+  color: #333;
+  letter-spacing: 0.1em;
+}
