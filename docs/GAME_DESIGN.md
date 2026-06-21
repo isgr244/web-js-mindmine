@@ -120,7 +120,7 @@ const baseEvo = EVO_MS_MAX - rNorm * (EVO_MS_MAX - EVO_MS_MIN);  // 30000〜2000
 
 ### ステージ外観
 
-各ステージは `STAGE_STYLE` 配列で色と大きさが定義されています：
+敵の各ステージは `STAGE_STYLE` 配列で色と大きさが定義されています：
 
 | ステージ | 色 | 特徴 |
 |---|---|---|
